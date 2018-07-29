@@ -2,6 +2,9 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include "matplotlibcpp.h"
+
+namespace plt = matplotlibcpp;
 
 struct Point {
     double x;
@@ -37,6 +40,7 @@ private:
         for (std::size_t i = 0, max = tourPoints.size() - 1; i < max; ++i) {
             computedCost += tourPoints[i].distance(tourPoints[i+1]);
         }
+        computedCost += tourPoints.back().distance(tourPoints.front());
     }
 
 public:
@@ -92,6 +96,8 @@ private:
         return newState;
     }
 
+    // computes the probability that we transition to the new state, given
+    // the current system energy, new system energy, and temperature
     double acceptanceProbability(int energy, int newEnergy, double temp) const {
         if (newEnergy < energy) {
             return 1.0;
@@ -123,21 +129,17 @@ public:
 };
 
 int main() {
-    std::vector<Point> points {Point(37, 59),
-                               Point(40, 58),
-                               Point(89, 16),
-                               Point(46, 27),
-                               Point(88, 25),
-                               Point(48, 61),
-                               Point(93, 44),
-                               Point(45, 50),
-                               Point(48, 5),
-                               Point(62, 12)};
+    std::vector<int> xs = {37, 40, 89, 46, 88, 48, 93, 45, 48, 62};
+    std::vector<int> ys = {59, 58, 16, 27, 25, 61, 44, 59, 5,  12};
+    std::vector<Point> points;
+    for (int i = 0; i < 10; ++i) {
+        points.push_back(Point(xs[i], ys[i]));
+    }
     Tour initialTour(points);
     double initialTemp = 70.0;
-    double alpha = 0.997;
+    double coolingRate = 0.9999;
     int iterations = 5000000;
-    SimulatedAnnealingSolver sas(initialTour, initialTemp, alpha, iterations);
+    SimulatedAnnealingSolver sas(initialTour, initialTemp, coolingRate, iterations);
     Tour solution = sas.solve();
 
     std::cout << "Initial tour cost: " << initialTour.cost() << "\n";
@@ -153,6 +155,37 @@ int main() {
         std::cout << p << " ";
     }
     std::cout << "\n";
+
+    std::vector<int> initX;
+    std::vector<int> initY;
+    auto initPoints = initialTour.points();
+    for (auto p : initPoints) {
+        initX.push_back(p.x);
+        initY.push_back(p.y);
+    }
+    initX.push_back(initPoints[0].x);
+    initY.push_back(initPoints[0].y);
+
+    std::vector<int> finalX;
+    std::vector<int> finalY;
+    auto solPoints = solution.points();
+    for (auto p : solPoints) {
+        finalX.push_back(p.x);
+        finalY.push_back(p.y);
+    }
+    finalX.push_back(solPoints[0].x);
+    finalY.push_back(solPoints[0].y);
+
+
+    plt::subplot(2, 1, 1);
+    plt::plot(initX, initY, "k.-");
+    plt::title("Original tour");
+
+    plt::subplot(2, 1, 2);
+    plt::plot(finalX, finalY, "r.-");
+    plt::title("Final tour");
+
+    plt::show();
 
     return 0;
 }
