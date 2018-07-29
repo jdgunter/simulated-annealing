@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <string>
 #include "matplotlibcpp.h"
 
 namespace plt = matplotlibcpp;
@@ -129,16 +130,16 @@ public:
 };
 
 int main() {
-    std::vector<int> xs = {37, 40, 89, 46, 88, 48, 93, 45, 48, 62};
-    std::vector<int> ys = {59, 58, 16, 27, 25, 61, 44, 59, 5,  12};
+    std::vector<int> xs = {95,2,47,50,52,87,69,79,63,75,44,11,64,49,42,77,59,83,48,60,93,28,73,100,92,26,20,7,73,84};
+    std::vector<int> ys = {69,74,32,98,57,48,80,72,5,87,16,71,87,1,64,13,68,23,35,26,66,58,99,82,38,71,52,10,18,12};
     std::vector<Point> points;
-    for (int i = 0; i < 10; ++i) {
+    for (std::size_t i = 0; i < xs.size(); ++i) {
         points.push_back(Point(xs[i], ys[i]));
     }
     Tour initialTour(points);
-    double initialTemp = 70.0;
-    double coolingRate = 0.9999;
-    int iterations = 5000000;
+    double initialTemp = 80.0;
+    double coolingRate = 0.99999;
+    int iterations = 10000000;
     SimulatedAnnealingSolver sas(initialTour, initialTemp, coolingRate, iterations);
     Tour solution = sas.solve();
 
@@ -176,16 +177,22 @@ int main() {
     finalX.push_back(solPoints[0].x);
     finalY.push_back(solPoints[0].y);
 
+    plt::figure_size(1200, 780);
 
     plt::subplot(2, 1, 1);
     plt::plot(initX, initY, "k.-");
-    plt::title("Original tour");
+    plt::title(std::string("Original tour: ") + std::to_string(initialTour.cost()));
+    plt::xlim(0, 100);
+    plt::ylim(0, 100);
 
     plt::subplot(2, 1, 2);
-    plt::plot(finalX, finalY, "r.-");
-    plt::title("Final tour");
+    plt::plot(finalX, finalY, "k.-");
+    plt::title(std::string("Final tour: ") + std::to_string(solution.cost()));
+    plt::xlim(0, 100);
+    plt::ylim(0, 100);
 
     plt::show();
+    plt::save("./solution.png");
 
     return 0;
 }
